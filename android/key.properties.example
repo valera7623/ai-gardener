@@ -1,0 +1,4 @@
+storePassword=
+keyPassword=
+keyAlias=ai_gardener
+storeFile=upload-keystore.jks

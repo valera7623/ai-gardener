@@ -1,0 +1,10 @@
+name: ai_gardener_server
+description: Сервер распознавания для ИИ-садовника. Ключ Yandex остаётся здесь.
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ^3.13.7
+
+dev_dependencies:
+  test: 1.31.1
