@@ -1,0 +1,22 @@
+# Вставить в ~/gameforge/Caddyfile (отдельный сайт для API ИИ-садовника).
+# DNS aegisai.fun уже должен указывать на этот VPS.
+# Caddy сам выпустит HTTPS-сертификат Let's Encrypt.
+
+https://aegisai.fun {
+	encode gzip
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+	handle /health {
+		reverse_proxy host.docker.internal:8090
+	}
+
+	handle /v1/* {
+		reverse_proxy host.docker.internal:8090
+	}
+
+	respond "ИИ-садовник: используйте /v1/recognize" 404
+}
+
+http://aegisai.fun {
+	redir https://aegisai.fun{uri} permanent
+}
