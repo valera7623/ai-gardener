@@ -41,14 +41,32 @@ fi
 chmod 600 deploy/recognize.env
 chmod +x deploy/run.sh
 
-# Путь к dart в unit-файле должен совпадать с системой.
+# systemd берёт dart из PATH; подставим реальный каталог SDK.
 DART_BIN="$(command -v dart)"
-sed "s|/usr/lib/dart/bin/dart|$DART_BIN|" deploy/run.sh > deploy/run.sh.tmp
-mv deploy/run.sh.tmp deploy/run.sh
-chmod +x deploy/run.sh
+DART_DIR="$(dirname "$DART_BIN")"
+tee deploy/ai-gardener-recognize.service >/dev/null <<EOF
+[Unit]
+Description=ИИ-садовник recognition server
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=$USER
+WorkingDirectory=$APP_DIR/server
+EnvironmentFile=$APP_DIR/server/deploy/recognize.env
+Environment=PATH=$DART_DIR:/usr/local/bin:/usr/bin
+ExecStart=$APP_DIR/server/deploy/run.sh
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 echo "==> systemd"
-sudo cp deploy/ai-gardener-recognize.service /etc/systemd/system/
+sudo cp deploy/ai-gardener-recognize.service /etc/systemd/system/ai-gardener-recognize.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now ai-gardener-recognize.service
 sudo systemctl --no-pager --full status ai-gardener-recognize.service || true
@@ -57,5 +75,6 @@ echo
 echo "Локальная проверка:"
 echo "  curl -sS http://127.0.0.1:8090/health"
 echo
-echo "Дальше нужен reverse proxy с https://aegisai.fun на http://127.0.0.1:8090"
+echo "Дальше reverse proxy: https://aegisai.fun → http://127.0.0.1:8090"
+echo "Пример: $APP_DIR/server/deploy/nginx-recognize.conf.example"
 echo "Покажите: docker ps --format '{{.Names}}\t{{.Ports}}\t{{.Image}}'"

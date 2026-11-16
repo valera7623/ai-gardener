@@ -1,0 +1,24 @@
+# Фрагмент для reverse proxy перед уже работающим HTTPS на aegisai.fun.
+# Проксирует API распознавания на локальный Dart-сервер без TLS.
+#
+# Подключите этот файл в ваш nginx (хост aegisai.fun) и перезагрузите nginx.
+
+location = /health {
+    proxy_pass http://127.0.0.1:8090/health;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /v1/ {
+    proxy_pass http://127.0.0.1:8090/v1/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    client_max_body_size 8m;
+    proxy_read_timeout 60s;
+}
