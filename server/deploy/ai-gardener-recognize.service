@@ -1,0 +1,18 @@
+[Unit]
+Description=ИИ-садовник recognition server
+After=network.target
+
+[Service]
+Type=simple
+User=valera
+Group=valera
+WorkingDirectory=/home/valera/ai-gardener/server
+EnvironmentFile=/home/valera/ai-gardener/server/deploy/recognize.env
+Environment=PATH=/usr/lib/dart/bin:/usr/local/bin:/usr/bin
+ExecStart=/home/valera/ai-gardener/server/deploy/run.sh
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

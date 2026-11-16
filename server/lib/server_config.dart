@@ -7,6 +7,7 @@ class ServerConfig {
     this.folderId = '',
     this.model = defaultModel,
     this.port = 8080,
+    this.bindAddress = '127.0.0.1',
     this.maxImageBytes = 3500000,
     this.rateLimit = 20,
     this.rateWindow = const Duration(minutes: 10),
@@ -24,6 +25,8 @@ class ServerConfig {
   final String folderId;
   final String model;
   final int port;
+  /// `127.0.0.1` за reverse proxy, `0.0.0.0` если нужен прямой доступ.
+  final String bindAddress;
   final int maxImageBytes;
   final int rateLimit;
   final Duration rateWindow;
@@ -86,9 +89,18 @@ class ServerConfig {
           ? defaultModel
           : env['YANDEX_MODEL']!.trim(),
       port: _port(env['PORT'], tls: certificate.isNotEmpty),
+      bindAddress: _bindAddress(env['BIND_ADDRESS']),
       tlsCertificatePath: certificate.isEmpty ? null : certificate,
       tlsPrivateKeyPath: privateKey.isEmpty ? null : privateKey,
     );
+  }
+
+  static String _bindAddress(String? value) {
+    final address = (value ?? '').trim();
+    if (address.isEmpty) {
+      return '127.0.0.1';
+    }
+    return address;
   }
 
   static int _port(String? value, {required bool tls}) {

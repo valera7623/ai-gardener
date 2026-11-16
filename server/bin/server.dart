@@ -13,15 +13,16 @@ Future<void> main() async {
     return;
   }
 
+  final address = InternetAddress(config.bindAddress);
   final server = await startRecognizeServer(
     config: config,
     callYandex: postToYandex,
-    address: InternetAddress.anyIPv4,
+    address: address,
     port: config.port,
   );
   final scheme = config.usesTls ? 'https' : 'http';
   stdout.writeln(
-    'Сервер распознавания слушает $scheme://0.0.0.0:${server.port}.',
+    'Сервер распознавания слушает $scheme://${config.bindAddress}:${server.port}.',
   );
   stdout.writeln(
     'Ключ Yandex остаётся в окружении и в приложение не передаётся.',
