@@ -18,6 +18,8 @@ class RecognitionConnection {
   });
 
   static const defaultModel = 'deepseek-v4.1-flash';
+  static const serviceEndpoint = 'https://aegisai.fun';
+  static const clientKey = 'b6c7115ff307b8e8cc80b0b615c519bb572330da61ab16eb';
   static const yandexCompletionsUrl =
       'https://ai.api.cloud.yandex.net/v1/chat/completions';
 
@@ -29,6 +31,8 @@ class RecognitionConnection {
 
   static const defaults = RecognitionConnection(
     backend: RecognitionBackend.custom,
+    endpoint: serviceEndpoint,
+    apiKey: clientKey,
   );
 
   bool get isReady => switch (backend) {

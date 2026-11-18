@@ -4,4 +4,6 @@ abstract class HistoryRepository {
   Future<List<RecognitionResult>> getAll();
 
   Future<RecognitionResult> add(RecognitionResult result);
+
+  Future<void> delete(String id);
 }

@@ -29,4 +29,7 @@ class RecognitionResult {
   /// Оценка моделью на телефоне, без облачного запроса.
   final bool isOffline;
   final List<DiseaseMatch> matches;
+
+  /// Сохранённый идентификатор тоже отмечает оценку на телефоне.
+  bool get isOnDeviceAssessment => isOffline || id.startsWith('device-');
 }

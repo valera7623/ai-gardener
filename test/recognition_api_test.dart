@@ -152,7 +152,8 @@ void main() {
       RecognitionRepositoryImpl(
         api: HttpRecognitionApi(client),
         catalog: catalog,
-        readConnection: () => RecognitionConnection.defaults,
+        readConnection: () =>
+            const RecognitionConnection(backend: RecognitionBackend.custom),
       ).recognize(imagePath: photo.path),
       throwsA(isA<AppException>()),
     );

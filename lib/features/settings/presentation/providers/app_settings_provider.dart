@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../calendar/domain/climate_zone.dart';
 import '../../../calendar/presentation/providers/reminder_providers.dart';
-import '../../../recognition/domain/recognition_connection.dart';
 import '../../data/repositories/settings_repository_impl.dart';
 import '../../domain/app_settings.dart';
 import '../../domain/settings_repository.dart';
@@ -48,11 +47,5 @@ class AppSettingsController extends Notifier<AppSettings> {
     state = next;
     await ref.read(settingsRepositoryProvider).save(next);
     await ref.read(reminderSyncProvider).rescheduleZone(zone: zone);
-  }
-
-  Future<void> setRecognition(RecognitionConnection connection) async {
-    final next = state.copyWith(connection: connection);
-    state = next;
-    await ref.read(settingsRepositoryProvider).save(next);
   }
 }

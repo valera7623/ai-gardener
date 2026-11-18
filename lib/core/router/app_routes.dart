@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const calendar = '/calendar';
   static const history = '/history';
   static const settings = '/settings';
+  static const dataPolicy = '/settings/data-policy';
 
   static String plantPath(String id) => '/catalog/$id';
 }

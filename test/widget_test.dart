@@ -18,6 +18,29 @@ void main() {
     expect(find.text('История'), findsOneWidget);
   });
 
+  testWidgets('settings open the data policy', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: AiGardenerApp()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Настройки'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('open-data-policy')),
+      200,
+    );
+    await tester.tap(find.byKey(const Key('open-data-policy')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Кто обрабатывает данные'), findsOneWidget);
+    expect(find.textContaining('https://aegisai.fun'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Ограничение'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.textContaining('не является диагнозом'), findsOneWidget);
+  });
+
   testWidgets('catalog opens the plant list', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: AiGardenerApp()));
     await tester.pumpAndSettle();

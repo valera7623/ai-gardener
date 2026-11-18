@@ -29,4 +29,13 @@ class HistoryController extends AsyncNotifier<List<RecognitionResult>> {
     ]);
     return saved;
   }
+
+  Future<void> remove(String id) async {
+    final current = state.value ?? await future;
+    state = AsyncData([
+      for (final item in current)
+        if (item.id != id) item,
+    ]);
+    await ref.read(historyRepositoryProvider).delete(id);
+  }
 }

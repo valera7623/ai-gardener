@@ -34,6 +34,17 @@ class RecognitionResultScreen extends ConsumerWidget {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
+                if (resolved.isOnDeviceAssessment) ...[
+                  const Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _ResultMark('Оценка на устройстве'),
+                      _ResultMark('Без интернета'),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 DecoratedBox(
                   decoration: BoxDecoration(
                     color: resolved.isDemo
@@ -46,8 +57,8 @@ class RecognitionResultScreen extends ConsumerWidget {
                     child: Text(
                       resolved.isDemo
                           ? 'Это сохранённый учебный пример, а не ответ сервиса.'
-                          : resolved.isOffline
-                          ? 'Оценка сделана на телефоне без интернета. Сверьте её с листом.'
+                          : resolved.isOnDeviceAssessment
+                          ? 'Сверьте оценку с листом: модель на телефоне может ошибиться.'
                           : 'Сверьтесь с растением: облачная подсказка может ошибиться.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: resolved.isDemo
@@ -63,13 +74,38 @@ class RecognitionResultScreen extends ConsumerWidget {
                 Text(resolved.title, style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),
                 Text(
-                  'Похожесть: ${(resolved.confidence * 100).round()}%',
+                  resolved.isOnDeviceAssessment
+                      ? 'Уверенность модели: ${(resolved.confidence * 100).round()}%'
+                      : 'Похожесть: ${(resolved.confidence * 100).round()}%',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
                 ),
+                if (resolved.isOnDeviceAssessment &&
+                    resolved.confidence < 0.5) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Модель не уверена, лучше сделать фото при хорошем освещении или использовать онлайн-режим',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Text(resolved.summary, style: theme.textTheme.bodyLarge),
+                if (resolved.matches.length > 1) ...[
+                  const SizedBox(height: 16),
+                  Text('Другие варианты', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  for (final match in resolved.matches.skip(1))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        '${match.title} · ${(match.confidence * 100).round()}%',
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                    ),
+                ],
                 const SizedBox(height: 20),
                 Text('Что сделать', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 12),
@@ -85,6 +121,32 @@ class RecognitionResultScreen extends ConsumerWidget {
                 ],
               ],
             ),
+    );
+  }
+}
+
+class _ResultMark extends StatelessWidget {
+  const _ResultMark(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          text,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.colorScheme.onSecondaryContainer,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -45,6 +45,7 @@ dependencies:
   path_provider: ^2.1.5
   tflite_flutter: ^0.11.0
   timezone: ^0.10.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ flutter:
   assets:
     - assets/models/plant_disease.tflite
     - assets/models/labels.txt
+    - assets/data/offline_diagnoses.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

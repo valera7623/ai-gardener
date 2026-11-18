@@ -21,7 +21,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
     return AppSettings(
       themeMode: _themeMode(record.themeMode),
       climateZoneId: climateZoneById(record.climateZoneId).id,
-      connection: _connection(record),
     );
   }
 
@@ -33,34 +32,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ..id = 1
           ..themeMode = settings.themeMode.name
           ..climateZoneId = settings.climateZoneId
-          ..recognitionBackend = settings.connection.backend.name
-          ..recognitionApiKey = settings.connection.apiKey
-          ..recognitionEndpoint = settings.connection.endpoint
-          ..recognitionModel = settings.connection.model
-          ..recognitionFolderId = settings.connection.folderId,
+          ..recognitionBackend = RecognitionConnection.defaults.backend.name
+          ..recognitionApiKey = RecognitionConnection.defaults.apiKey
+          ..recognitionEndpoint = RecognitionConnection.defaults.endpoint
+          ..recognitionModel = RecognitionConnection.defaults.model
+          ..recognitionFolderId = RecognitionConnection.defaults.folderId,
       );
     });
-  }
-
-  RecognitionConnection _connection(AppSettingsRecord record) {
-    return RecognitionConnection(
-      backend: _backend(record.recognitionBackend),
-      apiKey: record.recognitionApiKey,
-      endpoint: record.recognitionEndpoint,
-      model: record.recognitionModel.trim().isEmpty
-          ? RecognitionConnection.defaultModel
-          : record.recognitionModel,
-      folderId: record.recognitionFolderId,
-    );
-  }
-
-  RecognitionBackend _backend(String name) {
-    for (final backend in RecognitionBackend.values) {
-      if (backend.name == name) {
-        return backend;
-      }
-    }
-    return RecognitionBackend.yandex;
   }
 
   ThemeMode _themeMode(String name) {

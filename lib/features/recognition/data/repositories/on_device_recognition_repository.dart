@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../shared/models/care_recommendation.dart';
 import '../../../../shared/models/recognition_result.dart';
+import '../../domain/offline_diagnosis.dart';
 import '../../domain/repositories/recognition_repository.dart';
 import '../on_device_plant_recognizer.dart';
 import '../plant_disease_labels.dart';
@@ -20,34 +20,42 @@ class OnDeviceRecognitionRepository implements RecognitionRepository {
         'Не удалось прочитать фото. Выберите его ещё раз.',
       );
     }
-    final matches = await _recognizer.recognizeBytes(await file.readAsBytes());
-    if (matches.isEmpty) {
+    final assessment = await _recognizer.recognizeBytes(
+      await file.readAsBytes(),
+    );
+    if (assessment.matches.isEmpty) {
       throw const AppException('Модель не смогла оценить это фото.');
     }
-    final top = matches.first;
-    final others = matches
-        .skip(1)
-        .map((match) => '${match.title} (${(match.confidence * 100).round()}%)')
-        .join(', ');
-    return RecognitionResult(
-      id: 'device-${DateTime.now().microsecondsSinceEpoch}',
-      title: top.title,
-      summary: others.isEmpty
-          ? 'Без интернета. Модель на телефоне сравнила лист с известными болезнями.'
-          : 'Без интернета. Модель на телефоне сравнила лист с известными болезнями. Дальше по вероятности: $others.',
-      confidence: top.confidence,
-      recommendations: const [
-        CareRecommendation(
-          title: 'Сверьте ещё раз',
-          description: 'Это оценка по фото без интернета. Посмотрите лист при дневном свете и сравните его с соседними.',
-        ),
-      ],
-      createdAt: DateTime.now(),
-      plantId: plantDiseaseCatalogIds[top.label],
+    final top = assessment.matches.first;
+    return offlineRecognitionResult(
+      assessment: assessment,
       imagePath: imagePath,
-      isDemo: false,
-      isOffline: true,
-      matches: matches,
+      plantId: plantDiseaseCatalogIds[top.label],
     );
   }
+}
+
+/// Тот же набор полей, что у облачного результата: название, описание и действия.
+RecognitionResult offlineRecognitionResult({
+  required OnDeviceAssessment assessment,
+  required String imagePath,
+  String? plantId,
+  DateTime? createdAt,
+}) {
+  final top = assessment.matches.first;
+  final diagnosis = assessment.diagnosis;
+  final moment = createdAt ?? DateTime.now();
+  return RecognitionResult(
+    id: 'device-${moment.microsecondsSinceEpoch}',
+    title: diagnosis.russianName,
+    summary: diagnosis.shortDescription,
+    confidence: top.confidence,
+    recommendations: diagnosis.recommendations,
+    createdAt: moment,
+    plantId: plantId,
+    imagePath: imagePath,
+    isDemo: false,
+    isOffline: true,
+    matches: assessment.matches,
+  );
 }

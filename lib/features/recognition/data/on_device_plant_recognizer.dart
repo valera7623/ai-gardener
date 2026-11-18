@@ -4,15 +4,21 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../shared/models/disease_match.dart';
+import '../domain/offline_diagnosis.dart';
+import 'offline_diagnosis_service.dart';
 import 'plant_disease_labels.dart';
 
 /// Оффлайн-оценка фото моделью EfficientNetV2S на 38 классов PlantVillage.
 /// Модель загружается один раз и живёт, пока провайдер её не закроет.
 class OnDevicePlantRecognizer {
+  OnDevicePlantRecognizer({OfflineDiagnosisService? diagnoses})
+    : _diagnoses = diagnoses ?? OfflineDiagnosisService();
+
+  final OfflineDiagnosisService _diagnoses;
   Interpreter? _interpreter;
   List<String>? _labels;
 
-  Future<List<DiseaseMatch>> recognizeBytes(Uint8List bytes) async {
+  Future<OnDeviceAssessment> recognizeBytes(Uint8List bytes) async {
     if (bytes.isEmpty) {
       throw const AppException('Фото пустое. Снимите его ещё раз.');
     }
@@ -65,7 +71,42 @@ class OnDevicePlantRecognizer {
         'Не удалось оценить фото на телефоне. Попробуйте ещё раз.',
       );
     }
-    return topDiseaseMatches(scores: _classScores(output), labels: _labels!);
+    final matches = topDiseaseMatches(
+      scores: _classScores(output),
+      labels: _labels!,
+    );
+    if (matches.isEmpty) {
+      throw const AppException('Модель не смогла оценить это фото.');
+    }
+    return _withDiagnoses(matches);
+  }
+
+  Future<OnDeviceAssessment> _withDiagnoses(List<DiseaseMatch> matches) async {
+    try {
+      final diagnosis = await _diagnoses.getDiagnosis(matches.first.label);
+      final titled = <DiseaseMatch>[];
+      for (final match in matches) {
+        final card = match.label == diagnosis.englishName
+            ? diagnosis
+            : await _diagnoses.getDiagnosis(match.label);
+        titled.add(
+          DiseaseMatch(
+            label: match.label,
+            title: card.russianName,
+            confidence: match.confidence,
+          ),
+        );
+      }
+      return OnDeviceAssessment(matches: titled, diagnosis: diagnosis);
+    } catch (_) {
+      return OnDeviceAssessment(
+        matches: matches,
+        diagnosis: OfflineDiagnosis.fallback(
+          matches.first.label,
+          russianName: plantDiseaseTitles[matches.first.label],
+        ),
+      );
+    }
   }
 
   Future<Interpreter> _load() async {

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../calendar/presentation/widgets/climate_zone_tiles.dart';
 import '../providers/app_settings_provider.dart';
-import '../widgets/recognition_connection_form.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -68,22 +69,61 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 16),
-          Text('Распознавание', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(
-            'Для публикации укажите свой сервер: ключ Yandex задаётся только на нём. В телефон можно ввести отдельный ключ доступа к серверу.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const RecognitionConnectionForm(),
-          const SizedBox(height: 16),
           Text('О приложении', style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
-            '${AppConstants.appName} помогает заметить проблему по фото и подсказывает, как ухаживать за растением. Справочник, история и напоминания работают без интернета.',
+            '${AppConstants.appName} помогает заметить проблему по фото и подсказывает, как ухаживать за растением. Справочник, история и напоминания работают без интернета. Подсказка по фото не является диагнозом.',
             style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 12),
+          Material(
+            color: theme.colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
+            child: InkWell(
+              key: const Key('open-data-policy'),
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.push(AppRoutes.dataPolicy),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.privacy_tip_outlined,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Политика данных',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Что остаётся на телефоне и когда фото уходит на сервер.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

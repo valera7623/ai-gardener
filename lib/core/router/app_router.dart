@@ -9,6 +9,7 @@ import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/recognition/presentation/screens/recognition_result_screen.dart';
 import '../../features/recognition/presentation/screens/recognition_screen.dart';
+import '../../features/settings/presentation/screens/data_policy_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shared/models/recognition_result.dart';
 import '../../shared/widgets/empty_placeholder.dart';
@@ -57,6 +58,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'data-policy',
+            builder: (context, state) => const DataPolicyScreen(),
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) {

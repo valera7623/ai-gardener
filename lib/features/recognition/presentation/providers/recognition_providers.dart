@@ -8,6 +8,7 @@ import '../../../history/presentation/providers/history_providers.dart';
 import '../../../settings/presentation/providers/app_settings_provider.dart';
 import '../../data/http_recognition_api.dart';
 import '../../data/lookup_network_status.dart';
+import '../../data/offline_diagnosis_service.dart';
 import '../../data/on_device_plant_recognizer.dart';
 import '../../data/repositories/offline_aware_recognition_repository.dart';
 import '../../data/repositories/on_device_recognition_repository.dart';
@@ -22,10 +23,18 @@ final recognitionHttpClientProvider = Provider<http.Client>((ref) {
   return client;
 });
 
+final offlineDiagnosisServiceProvider = Provider<OfflineDiagnosisService>((
+  ref,
+) {
+  return OfflineDiagnosisService();
+});
+
 final onDevicePlantRecognizerProvider = Provider<OnDevicePlantRecognizer>((
   ref,
 ) {
-  final recognizer = OnDevicePlantRecognizer();
+  final recognizer = OnDevicePlantRecognizer(
+    diagnoses: ref.watch(offlineDiagnosisServiceProvider),
+  );
   ref.onDispose(recognizer.dispose);
   return recognizer;
 });
@@ -56,6 +65,14 @@ final recognitionControllerProvider =
 class RecognitionController extends Notifier<RecognitionState> {
   @override
   RecognitionState build() => const RecognitionState();
+
+  void clearPhoto() {
+    state = state.copyWith(
+      clearImage: true,
+      clearResult: true,
+      clearError: true,
+    );
+  }
 
   Future<void> pickFromCamera() => _pick(ImageSource.camera);
 

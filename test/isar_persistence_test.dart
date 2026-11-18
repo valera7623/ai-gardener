@@ -89,12 +89,42 @@ void main() {
 
     expect(settings.themeMode, ThemeMode.dark);
     expect(settings.climateZoneId, 'siberia');
-    expect(settings.connection.backend, RecognitionBackend.custom);
-    expect(settings.connection.endpoint, 'https://garden.example.ru');
-    expect(settings.connection.apiKey, 'local-key');
+    expect(settings.connection.endpoint, RecognitionConnection.serviceEndpoint);
+    expect(settings.connection.apiKey, RecognitionConnection.clientKey);
     expect(history.single.title, 'Тля на розе');
     expect(history.single.recommendations.single.topic, CareTopic.general);
     expect(reminders.single.taskId, 'tomato-sow');
     expect(reminders.single.enabled, isTrue);
+  });
+
+  test('deleting a history entry removes its stored photo', () async {
+    final photos = Directory('${directory.path}/photos');
+    final source = File('${directory.path}/leaf.jpg')
+      ..writeAsStringSync('jpeg');
+    final repository = HistoryRepositoryImpl(isar, photos);
+    final saved = await repository.add(
+      RecognitionResult(
+        id: 'leaf-2',
+        title: 'Пятно на листе',
+        summary: 'Светлое пятно у края.',
+        confidence: 0.4,
+        recommendations: const [
+          CareRecommendation(
+            title: 'Свет',
+            description: 'Уберите растение от прямого солнца.',
+          ),
+        ],
+        createdAt: DateTime.utc(2026, 6, 2, 9),
+        imagePath: source.path,
+      ),
+    );
+
+    expect(File(saved.imagePath!).existsSync(), isTrue);
+
+    await repository.delete(saved.id);
+
+    expect(await repository.getAll(), isEmpty);
+    expect(File(saved.imagePath!).existsSync(), isFalse);
+    expect(source.existsSync(), isTrue);
   });
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/utils/format_date.dart';
 import '../../../../shared/widgets/empty_placeholder.dart';
+import '../../../../shared/widgets/swipe_delete_background.dart';
 import '../providers/history_providers.dart';
 
 class HistoryScreen extends ConsumerWidget {
@@ -37,35 +38,55 @@ class HistoryScreen extends ConsumerWidget {
                     const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return Material(
-                    color: theme.colorScheme.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: theme.colorScheme.outlineVariant),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => context.push(
-                        AppRoutes.recognitionResult,
-                        extra: item,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title,
-                              style: theme.textTheme.titleMedium,
+                  final rowHeight = MediaQuery.textScalerOf(context).scale(76);
+                  return Dismissible(
+                    key: ValueKey(item.id),
+                    direction: DismissDirection.endToStart,
+                    background: const SwipeDeleteBackground(),
+                    onDismissed: (_) {
+                      ref.read(historyProvider.notifier).remove(item.id);
+                    },
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: rowHeight,
+                      child: Material(
+                        color: theme.colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: theme.colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.push(
+                            AppRoutes.recognitionResult,
+                            extra: item,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formatDateTime(item.createdAt),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              formatDateTime(item.createdAt),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
